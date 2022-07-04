@@ -76,15 +76,12 @@ export default{
     }
   },
     methods: {
-        login(){
-        api.post('Users/login',this.form)
-          .then(res => {
-                localStorage.setItem('user',JSON.stringify(res.data))
-                this.$router.push({ path: 'list' },JSON.stringify(res.data))
-                //var dados = localStorage.getItem('user');
-                //console.log(JSON.parse(dados).user)
-          }).catch(err => {console.log(err)})
-
+        async login(){
+          var dados = await api.post('Users/Login',this.form)
+                        .then(res => res.data.accessToken)
+                        .catch(err => {console.log(err)})
+          localStorage.setItem('token',dados)
+          this.$router.push({ path: 'list' })
         },
         register(){
             this.$router.push({ path: 'register' })

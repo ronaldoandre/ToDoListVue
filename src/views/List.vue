@@ -12,21 +12,21 @@
       </div>  
     </template>
     <template v-else>
-      <div v-for="(task, toDoId) in tasks" :key="toDoId">
+      <div v-for="(task,id) in tasks" :key="id">
         <b-card :title="task.titulo" class="mb-2">
           <b-card-text>{{ task.descricao }}</b-card-text>
 
           <b-button
             variant="outline-secondary"
             class="mr-2"
-            @click="edit(toDoId)"
+            @click="edit(id)"
           >
             Editar
           </b-button>
           <b-button
             variant="outline-danger"
             class="mr-2"
-            @click="remove(task, toDoId)"
+            @click="remove(task,id)"
           >
             Excluir
           </b-button>
@@ -55,23 +55,26 @@
 </template>
 
 <script>
+import api from '../models/api'
 export default {
   name: "List",
-
   data() {
     return {
-      user: {},
+      key: localStorage.getItem('token'),
       tasks: [],
       taskSelected: [],
+      idTask: null
     };
   },
   mounted() {
-    this.user = JSON.parse(localStorage.getItem("user"))
-    console.log(this.user)
   },
 
   created() {
-    this.tasks= [...JSON.parse(localStorage.getItem("user")).user.toDos];
+    var tarefas = [];
+    api.get('ToDos/User',{headers: {Authorization: "Bearer " + this.key}}).then(res => 
+     tarefas.push(...res.data))
+      .catch(err => {console.log(err)})
+    this.tasks = tarefas;
   },
 
 
@@ -80,9 +83,10 @@ export default {
       this.$router.push({ name: "form", params: { toDoId } });
     },
 
-    remove(task, toDoId) {
+    remove(task,id) {
       this.taskSelected = task;
-      this.taskSelected.toDoId = toDoId;
+      this.taskSelected.toDoId = task.toDoId;
+      this.idTask = id
       this.$refs.modalRemove.show();
     },
 
@@ -91,8 +95,9 @@ export default {
     },
 
     confirmRemoveTask() {
-      this.tasks.splice(this.taskSelected.toDoId, 1);
+      this.tasks.splice(this.idTask,1);
       localStorage.setItem("tasks", JSON.stringify(this.tasks));
+      api.delete(`ToDos/Delete/${this.taskSelected.toDoId}`,{headers:{Authorization: "Bearer " + this.key}});
       this.hideModal();
     },
   },

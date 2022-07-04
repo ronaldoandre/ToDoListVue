@@ -47,6 +47,7 @@
               id="confirmPassword"
               type="password"
               placeholder="Confirme sua senha"
+              v-model="form.ConfirmPassword"
             ></b-form-input>
           </b-form-group>
           <p/>
@@ -72,6 +73,7 @@
 </template>
 
 <script>
+import api from '../models/api'
 export default{
 
   data() {
@@ -79,7 +81,8 @@ export default{
       form: {
         Email: "",
         Password: "",
-        FullName: ""
+        FullName: "",
+        ConfirmPassword: ""
       }
     }
   },
@@ -88,14 +91,16 @@ export default{
             
         },
         register(){
-          /*api.post('Users/register',this.form)
-          .then(res => {
-                localStorage.setItem('user',JSON.stringify(res.data))
-                this.$router.push({ path: 'list' },JSON.stringify(res.data))
-                //var dados = localStorage.getItem('user');
-                //console.log(JSON.parse(dados).user)
-          }).catch(err => {console.log(err)})*/
-          console.log(this.form)
+          if(this.form.Password == this.form.ConfirmPassword){
+            api.post('Users/register',this.form)
+            .then(res => {
+                  localStorage.setItem('token',res.data.accessToken)
+                  this.$router.push({ path: 'list' })
+            }).catch(err => {console.log(err)})
+            console.log(this.form)
+          }else{
+            alert("As senhas estão diferentes")
+          }
         },
         goToLogin(){
           this.$router.push({ path: 'login' })
